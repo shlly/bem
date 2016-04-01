@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.auchan.bem.bem_dao.NegQuestionsDAO" >
+  <resultMap type="com.auchan.bem.bem_pojo.entity.NegQuestions" id="baseResultMap">
+  	 <id column="NID" property="nid" jdbcType="INTEGER" />
+  	 <result column="Q_NO" property="q_no" jdbcType="DECIMAL" />
+  	 <result column="ITEMNO" property="itemNo" jdbcType="DECIMAL" />
+  	 <result column="SUPNO" property="supNo" jdbcType="DECIMAL" />
+  	 <result column="ITEMNAME" property="itemName" jdbcType="VARCHAR" />
+  	 <result column="SUPNAME" property="supName" jdbcType="VARCHAR" /> 
+  	 <result column="PRICE" property="price" jdbcType="DECIMAL" />   
+  	 <result column="STORENO1" property="storeNo1" jdbcType="DECIMAL" />
+  	 <result column="PRICE1" property="price1" jdbcType="DECIMAL" />
+  	 <result column="STORENO2" property="storeNo2" jdbcType="DECIMAL" />
+  	 <result column="PRICE2" property="price2" jdbcType="DECIMAL" />
+  	 <result column="COMPETITOR" property="competitor" jdbcType="VARCHAR" />
+  	 <result column="W3PRICE" property="w3price" jdbcType="DECIMAL" />
+  	 <result column="W2PRICE" property="w2price" jdbcType="DECIMAL" />
+  	 <result column="W1PRICE" property="w1price" jdbcType="DECIMAL" />
+  	 <result column="W0PRICE" property="w0price" jdbcType="DECIMAL" />
+  	 <result column="URGENT" property="urgent" jdbcType="VARCHAR" />
+  	 <association property="store" column="STORE_NO" javaType="com.auchan.bem.bem_pojo.entity.Store">
+   		<id column="STORE_NO" jdbcType="DECIMAL" property="storeNo" />
+    	<result column="NAME" jdbcType="VARCHAR" property="name" />
+	 </association>
+  	 <association property="division" column="DIVISION_NO" javaType="com.auchan.bem.bem_pojo.entity.Division">
+   		<id column="DIVISION_NO" jdbcType="DECIMAL" property="divisionNo" />
+    	<result column="DIVISION_NAME" jdbcType="VARCHAR" property="name" />
+    	<result column="DIVISION_EN_NAME" jdbcType="VARCHAR" property="enName" />
+	 </association>
+ 	 <association property="section" column="SECTION_NO" javaType="com.auchan.bem.bem_pojo.entity.Section">
+	    <id column="SECTION_NO" jdbcType="DECIMAL" property="sectionNo" />
+	    <result column="SECTION_NAME" jdbcType="VARCHAR" property="name" />
+	    <result column="SECTION_EN_NAME" jdbcType="VARCHAR" property="enName" />
+	 </association>
+ </resultMap>
+ 
+   <select id="selectByQno" resultMap="baseResultMap" parameterType="java.lang.Integer" >
+   select * from T_NEGQUESTION where Q_NO= #{q_no,jdbcType=DECIMAL}
+   </select>
+  <insert id="saveNegQuestion" parameterType="com.auchan.bem.bem_pojo.entity.NegQuestions" >
+    insert into T_NEGQUESTION
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="q_no != null" >
+        Q_NO,
+      </if>
+      <if test="itemNo != null" >
+        ITEMNO,
+      </if>
+       <if test="supNo != null" >
+        SUPNO,
+        </if>
+      <if test="itemName != null" >
+        ITEMNAME,
+      </if>
+      <if test="supName!= null" >
+        SUPNAME,
+      </if>
+      <if test="price != null" >
+        PRICE,
+      </if>
+      <if test="storeNo1 != null" >
+       STORENO1,
+      </if>
+       <if test="price1 != null" >
+       PRICE1,
+      </if>
+       <if test="storeNo2 != null" >
+       STORENO2,
+      </if>
+       <if test="price2 != null" >
+       PRICE2,
+      </if>
+       <if test="competitor != null" >
+       COMPETITOR,
+      </if>
+       <if test="w3price != null" >
+       W3PRICE,
+      </if>
+       <if test="w2price != null" >
+       W2PRICE,
+      </if>
+       <if test="w1price != null" >
+       W1PRICE,
+      </if>
+       <if test="w0price != null" >
+       W0PRICE,
+      </if>
+       <if test="urgent != null" >
+      URGENT,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+       <if test="q_no != null" >
+        #{q_no,jdbcType=DECIMAL},
+      </if>
+      <if test="itemNo != null" >
+        #{itemNo,jdbcType=DECIMAL},
+      </if>
+       <if test="supNo != null" >
+        #{supNo,jdbcType=DECIMAL},
+      </if>
+      <if test="itemName != null" >
+        #{itemName,jdbcType=VARCHAR},
+      </if>
+       <if test="supName!= null" >
+        #{supName,jdbcType=VARCHAR},
+      </if>
+      <if test="price != null" >
+        #{price,jdbcType=DECIMAL},
+      </if>
+      <if test="storeNo1 != null" >
+        #{storeNo1,jdbcType=DECIMAL},
+      </if>
+      <if test="price1 != null" >
+        #{price1,jdbcType=DECIMAL},
+      </if>
+      <if test="storeNo2!= null" >
+        #{storeNo2,jdbcType=DECIMAL},
+      </if>
+      <if test="price2!= null" >
+        #{price2,jdbcType=DECIMAL},
+      </if>
+       <if test="competitor!= null" >
+        #{competitor,jdbcType=VARCHAR},
+      </if>
+      <if test="w3price!= null" >
+        #{w3price,jdbcType=DECIMAL},
+      </if>
+      <if test="w2price!= null" >
+        #{w2price,jdbcType=DECIMAL},
+      </if>
+      <if test="w1price!= null" >
+        #{w1price,jdbcType=DECIMAL},
+      </if>
+      <if test="w0price!= null" >
+        #{w0price,jdbcType=DECIMAL},
+      </if>
+        <if test="urgent != null" >
+        #{urgent,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+</mapper>

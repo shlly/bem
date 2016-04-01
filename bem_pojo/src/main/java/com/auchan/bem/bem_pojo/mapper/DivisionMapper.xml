@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.auchan.bem.bem_dao.DivisionDAO">
+  <resultMap id="DivisionResultMap" type="com.auchan.bem.bem_pojo.entity.Division">
+    <id column="DIVISION_NO" jdbcType="DECIMAL" property="divisionNo" />
+    <result column="NAME" jdbcType="VARCHAR" property="name" />
+    <result column="EN_NAME" jdbcType="VARCHAR" property="enName" />
+    <result column="EMAIL_NAME" jdbcType="VARCHAR" property="emailName" />
+    <collection  property="sections"
+    		ofType="com.auchan.bem.bem_pojo.entity.Section"
+    		javaType="ArrayList" column="DIVISION_NO"
+    		select="_selectSectionByDivisionNo">
+    	<id column="SECTION_NO" jdbcType="DECIMAL" property="sectionNo" />
+	    <result column="NAME" jdbcType="VARCHAR" property="name" />
+	    <result column="EN_NAME" jdbcType="VARCHAR" property="enName" />
+	    <result column="DEPT_NO" jdbcType="DECIMAL" property="deptNo" />
+	    <result column="DIVISION_NO" jdbcType="DECIMAL" property="divisionNo" />
+	    <result column="USR" jdbcType="VARCHAR" property="usr" />
+	    <result column="STATUS" jdbcType="DECIMAL" property="status" />
+	    <result column="CHANGED_DATE" jdbcType="TIMESTAMP" property="changedDate" />
+	    <result column="ACTIVE" jdbcType="DECIMAL" property="active" />
+    </collection>
+  </resultMap>
+  <resultMap id="SectionResultMap" type="com.auchan.bem.bem_pojo.entity.Section">
+    <id column="SECTION_NO" jdbcType="DECIMAL" property="sectionNo" />
+    <result column="NAME" jdbcType="VARCHAR" property="name" />
+    <result column="EN_NAME" jdbcType="VARCHAR" property="enName" />
+    <result column="DEPT_NO" jdbcType="DECIMAL" property="deptNo" />
+    <result column="DIVISION_NO" jdbcType="DECIMAL" property="divisionNo" />
+    <result column="USR" jdbcType="VARCHAR" property="usr" />
+    <result column="STATUS" jdbcType="DECIMAL" property="status" />
+    <result column="CHANGED_DATE" jdbcType="TIMESTAMP" property="changedDate" />
+    <result column="ACTIVE" jdbcType="DECIMAL" property="active" />
+  </resultMap>
+  <sql id="Division_Column_List">
+    DIVISION_NO, NAME, EN_NAME, EMAIL_NAME
+  </sql>
+  <sql id="Section_Column_List">
+    SECTION_NO, NAME, EN_NAME, DEPT_NO, DIVISION_NO, USR, STATUS, CHANGED_DATE, ACTIVE
+  </sql>
+  
+  <select id="selectSectionByDivisionNo" parameterType="java.lang.Short" resultMap="SectionResultMap">
+    select 
+    <include refid="Section_Column_List" />
+    from T_SECTION
+    where DIVISION_NO = #{divisionNo,jdbcType=DECIMAL}
+    order by SECTION_NO
+  </select>
+  <select id="_selectSectionByDivisionNo" parameterType="java.lang.Short" resultType="com.auchan.bem.bem_pojo.entity.Section">
+    select 
+    <include refid="Section_Column_List" />
+    from T_SECTION
+    where DIVISION_NO = #{divisionNo,jdbcType=DECIMAL}
+    order by SECTION_NO
+  </select>
+  <select id="selectAll" resultMap="DivisionResultMap">
+    select 
+    <include refid="Division_Column_List" />
+    from T_DIVISION
+    order by DIVISION_NO
+  </select>
+  <select id="selectDivisionByPrimaryKey" parameterType="java.lang.Short" resultMap="DivisionResultMap">
+    select 
+    <include refid="Division_Column_List" />
+    from T_DIVISION
+    where DIVISION_NO = #{divisionNo,jdbcType=DECIMAL}
+  </select>
+</mapper>

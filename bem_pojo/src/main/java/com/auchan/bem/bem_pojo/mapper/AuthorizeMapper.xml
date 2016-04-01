@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.auchan.bem.bem_dao.AuthorizeDAO">
+
+  <resultMap id="RoleResultMap" type="com.auchan.bem.bem_pojo.entity.Role">
+    <id column="ID" jdbcType="DECIMAL" property="id" />
+    <result column="NAME" jdbcType="VARCHAR" property="name" />
+    <result column="SYMBOL" jdbcType="VARCHAR" property="symbol" />
+    <result column="USER_NAME" jdbcType="VARCHAR" property="username" />
+    <result column="STATUS" jdbcType="DECIMAL" property="status" />
+    <collection property="functions" ofType="com.auchan.bem.bem_pojo.entity.Function"
+			javaType="java.util.ArrayList" select="selectChildFunction" column="ID">
+		<id column="ID" jdbcType="DECIMAL" property="id" />
+	    <result column="NAME" jdbcType="VARCHAR" property="name" />
+	    <result column="STATUS" jdbcType="DECIMAL" property="status" />
+	</collection>
+  </resultMap>
+  
+  <resultMap id="FunctionResultMap" type="com.auchan.bem.bem_pojo.entity.Function">
+  	<id column="ID" jdbcType="DECIMAL" property="id" />
+    <result column="NAME" jdbcType="VARCHAR" property="name" />
+    <result column="STATUS" jdbcType="DECIMAL" property="status" />
+  </resultMap>
+  
+  <resultMap id="UserRoleResultMap" type="com.auchan.bem.bem_pojo.entity.UserRole">
+  	<id column="ID" jdbcType="DECIMAL" property="id" />
+    <result column="USER_NAME" jdbcType="VARCHAR" property="username" />
+    <association property="role" column="ROLE_ID"
+    		javaType="com.auchan.bem.bem_pojo.entity.Role">
+    	<id column="ROLE_ID" jdbcType="DECIMAL" property="id" />
+    	<result column="NAME" jdbcType="VARCHAR" property="name" />
+    	<result column="SYMBOL" jdbcType="VARCHAR" property="symbol" />
+    </association>
+  </resultMap>
+  
+  <select id="selectChildFunction" resultType="com.auchan.bem.bem_pojo.entity.Function" parameterType="java.lang.Short">
+  	select
+  	T3.ID, T3.NAME, T3.STATUS
+  	from T_FUNCTION T3, T_ROLE_FUNCTION T4
+  	where T4.ROLE_ID = #{id,jdbcType=DECIMAL}
+  	and T3.ID = T4.FUNCTION_ID
+  	and T3.STATUS = 1
+  </select>
+  
+  <select id="selectRoleByUserName" resultMap="RoleResultMap">
+  	select
+  	T1.ID, T1.NAME, T1.SYMBOL, T1.STATUS, T2.USER_NAME
+  	from T_ROLE T1, T_USER_ROLE T2
+  	where T2.USER_NAME = #{username,jdbcType=VARCHAR}
+  	and T2.ROLE_ID = T1.ID
+  	and T1.STATUS = 1
+  </select>
+  
+  <select id="selectRole" resultMap="RoleResultMap">
+  	select
+  	T1.ID, T1.NAME, T1.STATUS, T1.SYMBOL
+  	from T_ROLE T1
+  </select>
+  
+  <select id="selectFunction" resultMap="FunctionResultMap">
+  	select
+  	ID, NAME, STATUS
+  	from T_FUNCTION
+  	where STATUS = 1
+  </select>
+  
+  <select id="selectUserRole" resultMap="UserRoleResultMap">
+  	select
+  	T2.ID, T2.USER_NAME, T2.ROLE_ID, T1.NAME, T1.SYMBOL
+  	from T_ROLE T1, T_USER_ROLE T2
+  	where T2.ROLE_ID = T1.ID
+  	and T1.STATUS = 1
+  	order by T2.ID DESC
+  </select>
+  
+  <delete id="deleteUserRole" parameterType="java.lang.Integer">
+  	delete from T_USER_ROLE
+    where ID = #{id,jdbcType=DECIMAL}
+  </delete>
+  
+  <insert id="insertUserRole" parameterType="com.auchan.bem.bem_pojo.entity.UserRole">
+  	<selectKey resultType="java.lang.Integer" order="BEFORE" keyProperty="id">
+	SELECT SEQ_T_USER_ROLE.NEXTVAL FROM DUAL
+	</selectKey>
+  	insert into T_USER_ROLE
+  	(ID, USER_NAME, ROLE_ID, CREATE_USER, CREATE_DATE)
+  	values (
+  		#{id,jdbcType=DECIMAL},
+  		#{username,jdbcType=VARCHAR},
+  		#{role.id,jdbcType=DECIMAL},
+  		#{createUser,jdbcType=VARCHAR},
+  		SYSDATE
+  	)
+  </insert>
+</mapper>

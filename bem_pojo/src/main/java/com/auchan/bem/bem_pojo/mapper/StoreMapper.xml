@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.auchan.bem.bem_dao.StoreDAO">
+  <resultMap id="BaseResultMap" type="com.auchan.bem.bem_pojo.entity.Store">
+    <id column="STORE_NO" jdbcType="DECIMAL" property="storeNo" />
+    <result column="NAME" jdbcType="VARCHAR" property="name" />
+    <result column="STATUS" jdbcType="DECIMAL" property="status" />
+    <result column="GUI_ADDRESS" jdbcType="VARCHAR" property="guiAddress" />
+    <result column="POST_NO" jdbcType="DECIMAL" property="postNo" />
+    <result column="PHONE_NO" jdbcType="VARCHAR" property="phoneNo" />
+    <result column="FAX_NO" jdbcType="VARCHAR" property="faxNo" />
+    <result column="AREA_NO" jdbcType="VARCHAR" property="areaNo" />
+    <result column="AREA_NAME" jdbcType="VARCHAR" property="areaName" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    STORE_NO, NAME, STATUS, GUI_ADDRESS, POST_NO, PHONE_NO, FAX_NO, AREA_NO, AREA_NAME
+  </sql>
+  <select id="selectAll" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from T_STORE
+    where STATUS=1
+    order by AREA_NO desc, NAME
+  </select>
+  
+  <select id="selectByStoreNo" resultMap="BaseResultMap">
+  	select
+  	<include refid="Base_Column_List" />
+  	from T_STORE
+  	where STORE_NO=#{storeNo,jdbcType=DECIMAL}
+  	and STATUS=1
+  </select>
+</mapper>

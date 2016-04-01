@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:util="http://www.springframework.org/schema/util" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:sec="http://www.springframework.org/schema/security"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	                                 http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+	                                 http://www.springframework.org/schema/context
+	                                 http://www.springframework.org/schema/context/spring-context-4.0.xsd
+	                                 http://www.springframework.org/schema/mvc
+	                                 http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd
+	                                 http://www.springframework.org/schema/security
+	                                 http://www.springframework.org/schema/security/spring-security-4.0.xsd">
+	
+	<!-- Spring Security LDAP -->
+	<sec:http pattern="/css/**" security="none"/>
+	<sec:http pattern="/email_templates/**" security="none"/> 
+	<sec:http pattern="/font-awesome/**" security="none"/> 
+	<sec:http pattern="/fonts/**" security="none"/> 
+	<sec:http pattern="/img/**" security="none"/> 
+	<sec:http pattern="/js/**" security="none"/> 
+	<sec:http pattern="/skin-config.html" security="none"/>
+	<sec:http auto-config="true" use-expressions="true">
+		<sec:csrf disabled="true"/> 
+        <sec:intercept-url pattern="/" access="permitAll"/>
+        <sec:intercept-url pattern="/login" access="permitAll"/>
+        <sec:intercept-url pattern="/file/fastUpload" access="hasAnyRole('ROLE_HO','ROLE_ADMIN')"/>
+        <sec:intercept-url pattern="/manage/**" access="hasAnyRole('ROLE_ADMIN')"/>
+        <sec:intercept-url pattern="/topic/getTopics" access="hasAnyRole('ROLE_ADMIN','ROLE_HO','ROLE_STORE')"/>
+        <sec:intercept-url pattern="/topic/**" access="hasAnyRole('ROLE_ADMIN')"/>
+        <sec:intercept-url pattern="/auth/**" access="hasAnyRole('ROLE_ADMIN')"/>
+        <sec:intercept-url pattern="/**" access="isAuthenticated()"/>
+        <sec:form-login login-page='/login' default-target-url="/home" authentication-failure-url="/login?error=true" />
+        <sec:logout logout-url="/logout" logout-success-url="/login" delete-cookies="JSESSIONID" />
+        <sec:session-management invalid-session-url="/login" />
+    </sec:http>
+    <sec:ldap-server 
+		id="contextSource" 
+		url="ldap://137.200.32.29/"
+		manager-dn="cn=authacc,o=auchan"
+		manager-password="au123@chan"/>
+<!--     <sec:authentication-manager>
+            <sec:ldap-authentication-provider
+                user-search-base="o=extmailAccount,o=auchan"
+                user-search-filter="(uid={0})"
+                group-search-base="o=extmailAccount,o=auchan"
+                group-search-filter="(member={0})"
+                >
+            </sec:ldap-authentication-provider>
+    </sec:authentication-manager> -->
+	
+	<sec:authentication-manager erase-credentials="true">
+		<sec:authentication-provider ref='ldapAuthProvider' />
+	</sec:authentication-manager>
+	<bean id="ldapAuthProvider" class="org.springframework.security.ldap.authentication.LdapAuthenticationProvider">
+		<constructor-arg>
+			<bean id="bindAuthenticator" class="org.springframework.security.ldap.authentication.BindAuthenticator">
+				<constructor-arg ref="contextSource" />
+				<property name="userSearch" >
+					<bean class="org.springframework.security.ldap.search.FilterBasedLdapUserSearch">  
+	                    <constructor-arg value="o=extmailAccount,o=auchan" />  
+	                    <constructor-arg value="(uid={0})" />  
+	                    <constructor-arg ref="contextSource" />  
+                	</bean>
+				</property>
+			</bean>
+		</constructor-arg>
+		<constructor-arg>
+			<!-- <bean class="org.springframework.security.ldap.userdetails.DefaultLdapAuthoritiesPopulator">
+				<constructor-arg ref="contextSource" />
+				<constructor-arg value="o=extmailAccount,o=auchan" />
+				<property name="groupSearchFilter" value="(member={0})" />
+			</bean> -->
+			<bean class="com.auchan.bem.bem_web.Interceptor.MyLdapAuthoritiesPopulator"></bean>
+		</constructor-arg>
+	</bean>
+	
+</beans>

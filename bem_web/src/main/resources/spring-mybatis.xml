@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	                                 http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+	                                 http://www.springframework.org/schema/context
+	                                 http://www.springframework.org/schema/context/spring-context-4.0.xsd
+	                                 http://www.springframework.org/schema/mvc
+	                                 http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd
+	                                 http://www.springframework.org/schema/tx
+	                                 http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+	                                 http://www.springframework.org/schema/aop
+	                                 http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
+	
+	<!-- spring和MyBatis完美整合，不需要mybatis的配置映射文件 -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<!-- 自动扫描mapping.xml文件 -->
+		<property name="mapperLocations" value="classpath:com/auchan/bem/bem_pojo/mapper/*Mapper.xml"></property>
+		<!-- 自动配置别名 -->
+		<property name="typeAliasesPackage" value="com.auchan.bem.bem_pojo.entity"></property>
+		<property name="configLocation" value="classpath:mybatis-configuration.xml"></property>
+	</bean>
+	
+	<!-- (事务管理)transaction manager, use JtaTransactionManager for global tx -->
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	
+	<!-- 配置事务特性，配置add，delete，update开始的方法，事务传播特性为required -->
+	<tx:advice id="transactionAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="tx_add*" propagation="REQUIRED" />
+			<tx:method name="tx_append*" propagation="REQUIRED" />
+			<tx:method name="tx_save*" propagation="REQUIRED" />
+			<tx:method name="tx_update*" propagation="REQUIRED" />
+			<tx:method name="tx_modify*" propagation="REQUIRED" />
+			<tx:method name="tx_edit*" propagation="REQUIRED" />
+			<tx:method name="tx_insert*" propagation="REQUIRED" />
+			<tx:method name="tx_delete*" propagation="REQUIRED" />
+			<tx:method name="tx_remove*" propagation="REQUIRED" />
+
+			<tx:method name="tx_get*" propagation="REQUIRED" read-only="true" />
+			<tx:method name="tx_find*" propagation="REQUIRED" read-only="true" />
+			<tx:method name="tx_load*" propagation="REQUIRED" read-only="true" />
+			<tx:method name="tx_search*" propagation="REQUIRED" read-only="true" />
+			<tx:method name="tx_query*" propagation="REQUIRED" read-only="true" />
+			<tx:method name="tx_list*" propagation="REQUIRED" read-only="true" />
+			<tx:method name="tx_*" propagation="REQUIRED" read-only="true" />
+
+		</tx:attributes>
+	</tx:advice>
+	<!-- 配置那些类的方法进行事务管理，当前包中的子包，类中所有方法需要，还需要参考tx:advice的设置 -->
+	<aop:config>
+		<aop:pointcut id="allManagerMethod"
+			expression="execution(*
+		com.auchan.bem.bem_service.*.*(..))" />
+		<aop:advisor pointcut-ref="allManagerMethod" advice-ref="transactionAdvice" />
+	</aop:config>
+	
+	<!-- 使用ehcache缓存 -->
+   <bean id="shiroEncacheManager" class="org.apache.shiro.cache.ehcache.EhCacheManager">
+		<property name="cacheManager" ref="ehCacheManager"/>
+	</bean>
+	<bean id="ehCacheManager" 
+		class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean"
+		p:configLocation="classpath:ehcache.xml"
+		p:shared="true"/>
+	
+</beans>

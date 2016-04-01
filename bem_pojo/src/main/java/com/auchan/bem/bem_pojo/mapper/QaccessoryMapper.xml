@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.auchan.bem.bem_dao.QaccessoryDAO" >
+  <resultMap id="BaseResultMap" type="com.auchan.bem.bem_pojo.entity.Qaccessory" >
+    <id column="ID" property="aid" jdbcType="DECIMAL" />
+    <result column="T_TITLE_NO" property="ttitleno" jdbcType="DECIMAL" />
+    <result column="NAME" property="aname" jdbcType="VARCHAR" />
+    <result column="LDAPID" property="ldapid" jdbcType="VARCHAR" />
+    <result column="CREATE_DATE" property="createDate" jdbcType="TIMESTAMP" />
+    <association property="directory" column="DIRECTORY_ID"
+    		javaType="com.auchan.bem.bem_pojo.entity.Directory">
+    	<id column="DIRECTORY_ID" property="id" jdbcType="DECIMAL" />
+    	<result column="PATH" property="path" jdbcType="VARCHAR" />
+	</association>
+  </resultMap>
+  
+  <insert id="insertQaccessory" parameterType="com.auchan.bem.bem_pojo.entity.Qaccessory" >
+	insert into T_QACCESSORY
+	(	
+		T_TITLE_NO,
+		NAME,
+		LDAPID,
+		CREATE_DATE
+    )
+    values
+    (
+		#{ttitleno,jdbcType=DECIMAL},
+		#{aname,jdbcType=VARCHAR},
+		#{ldapid,jdbcType=VARCHAR},
+		SYSDATE
+    )
+  </insert>
+  
+  <select id="selectById" resultMap="BaseResultMap"  parameterType="java.lang.Integer">
+  select t.* from T_QACCESSORY t where t.t_title_no=#{q_no,jdbcType=INTEGER}
+  </select>
+  
+  
+   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select t.* from T_QACCESSORY t where t.id=#{aid,jdbcType=INTEGER}
+  </select>
+</mapper>

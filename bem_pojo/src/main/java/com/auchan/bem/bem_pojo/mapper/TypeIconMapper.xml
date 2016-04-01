@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.auchan.bem.bem_dao.TypeIconDAO" >
+  <resultMap id="BaseResultMap" type="com.auchan.bem.bem_pojo.entity.TypeIcon" >
+    <id column="TYPE_ID" property="typeId" jdbcType="DECIMAL" />
+    <result column="NAME" property="name" jdbcType="VARCHAR" />
+    <result column="SUFFIX" property="suffix" jdbcType="VARCHAR" />
+    <result column="ICON" property="icon" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    TYPE_ID, NAME, SUFFIX, ICON
+  </sql>
+  
+  <select id="selectTypeIdBySuffix" resultType="java.lang.Short" parameterType="java.lang.String" >
+    select 
+    TYPE_ID
+    from T_TYPE_ICON
+    where instr(SUFFIX, #{suffix,jdbcType=VARCHAR}) > 0
+  </select>
+  
+  <select id="selectUnKnownTypeId" resultType="java.lang.Short" >
+    select 
+    TYPE_ID
+    from T_TYPE_ICON
+    where SUFFIX = '*'
+  </select>
+  
+  <select id="selectDirectoryTypeId" resultType="java.lang.Short" >
+    select 
+    TYPE_ID
+    from T_TYPE_ICON
+    where SUFFIX IS NULL
+  </select>
+</mapper>

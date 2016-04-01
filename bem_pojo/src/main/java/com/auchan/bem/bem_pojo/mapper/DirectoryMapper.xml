@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.auchan.bem.bem_dao.DirectoryDAO" >
+  <resultMap id="BaseResultMap" type="com.auchan.bem.bem_pojo.entity.Directory" >
+    <id column="ID" property="id" jdbcType="DECIMAL" />
+    <result column="NAME" property="name" jdbcType="VARCHAR" />
+    <result column="PATH" property="path" jdbcType="VARCHAR" />
+    <result column="PARENT_PATH_ID" property="parentPathId" jdbcType="DECIMAL" />
+    <result column="CREATE_DATE" property="createDate" jdbcType="TIMESTAMP" />
+    <result column="CREATE_USER" property="createUser" jdbcType="VARCHAR" />
+    <result column="TYPE_ID" property="typeId" jdbcType="DECIMAL" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID, NAME, PATH, PARENT_PATH_ID, CREATE_DATE, CREATE_USER, TYPE_ID
+  </sql>
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from T_DIRECTORY
+    where ID = #{id,jdbcType=DECIMAL}
+  </select>
+  
+  <select id="selectDirectorysByParentId" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+  	select
+  	<include refid="Base_Column_List" />
+    from T_DIRECTORY
+    where PARENT_PATH_ID = #{parentId,jdbcType=DECIMAL}
+  </select>
+  
+  <select id="selectDirectoryByName" resultMap="BaseResultMap" parameterType="java.lang.String">
+  	select
+  	<include refid="Base_Column_List" />
+    from T_DIRECTORY
+    where
+    <choose>
+    	<when test="name != null">
+    	NAME = #{name,jdbcType=VARCHAR}
+    	</when>
+    	<otherwise>
+    	PARENT_PATH_ID is null
+    	</otherwise>
+   	</choose>
+  </select>
+  
+  <select id="selectParentDirectory" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+  	select
+  	<include refid="Base_Column_List" />
+    from T_DIRECTORY
+    where
+    <choose>
+    	<when test="parentId != null">
+    	ID=(select PARENT_PATH_ID from T_DIRECTORY where ID=#{parentId,jdbcType=DECIMAL})
+    	</when>
+    	<otherwise>
+    	PARENT_PATH_ID is null
+    	</otherwise>
+   	</choose>
+  </select>
+  
+  <select id="selectIdByPath" resultType="java.lang.Integer" parameterType="java.lang.String" >
+    select 
+    ID
+    from T_DIRECTORY
+    where PATH = #{path,jdbcType=VARCHAR}
+  </select>
+  
+  <delete id="deleteDirectory" parameterType="java.lang.Integer" >
+    delete from T_DIRECTORY
+    where ID = #{id,jdbcType=DECIMAL}
+    or PARENT_PATH_ID = #{id,jdbcType=DECIMAL}
+  </delete>
+  
+  <insert id="insertDelDirectory" parameterType="java.util.Map" >
+    insert into T_DEL_DIRECTORY
+    (ID, NAME, PATH, PARENT_PATH_ID, CREATE_DATE, CREATE_USER, OG_ID, DEL_DATE, DEL_USER, TYPE_ID)
+    (select
+    SEQ_T_DEL_DIRECTORY.NEXTVAL as ID,
+    NAME,
+    PATH,
+    PARENT_PATH_ID,
+    CREATE_DATE,
+    CREATE_USER,
+    ID as OG_ID,
+    sysdate as DEL_DATE,
+    #{delUser,jdbcType=VARCHAR} as DEL_USER,
+    TYPE_ID
+    from T_DIRECTORY
+    where
+    ID = #{id,jdbcType=DECIMAL}
+    or PARENT_PATH_ID = #{id,jdbcType=DECIMAL})
+  </insert>
+  
+  <insert id="insertSelective" parameterType="com.auchan.bem.bem_pojo.entity.Directory" >
+	<selectKey resultType="java.lang.Integer" order="BEFORE" keyProperty="id">
+		SELECT SEQ_T_DIRECTORY.NEXTVAL AS id FROM DUAL
+	</selectKey>
+    insert into T_DIRECTORY
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="name != null" >
+        NAME,
+      </if>
+      <if test="path != null" >
+        PATH,
+      </if>
+      <if test="parentPathId != null" >
+        PARENT_PATH_ID,
+      </if>
+      CREATE_DATE,
+      <if test="createUser != null" >
+        CREATE_USER,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=DECIMAL},
+      </if>
+      <if test="name != null" >
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="path != null" >
+        #{path,jdbcType=VARCHAR},
+      </if>
+      <if test="parentPathId != null" >
+        #{parentPathId,jdbcType=DECIMAL},
+      </if>
+      sysdate,
+      <if test="createUser != null" >
+        #{createUser,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  
+  <update id="updateByPrimaryKeySelective" parameterType="com.auchan.bem.bem_pojo.entity.Directory" >
+    update T_DIRECTORY
+    <set >
+      <if test="name != null" >
+        NAME = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="path != null" >
+        PATH = #{path,jdbcType=VARCHAR},
+      </if>
+      <if test="parentPathId != null" >
+        PARENT_PATH_ID = #{parentPathId,jdbcType=DECIMAL},
+      </if>
+      <if test="createDate != null" >
+        CREATE_DATE = #{createDate,jdbcType=DATE},
+      </if>
+      <if test="createUser != null" >
+        CREATE_USER = #{createUser,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=DECIMAL}
+  </update>
+</mapper>

@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.auchan.bem.bem_dao.TopicDAO" >
+  <resultMap id="BaseResultMap" type="com.auchan.bem.bem_pojo.entity.Topic" >
+    <id column="TOPIC_NO" property="topicNo" jdbcType="DECIMAL" />
+    <result column="NAME" property="name" jdbcType="VARCHAR" />
+    <result column="EN_NAME" property="enName" jdbcType="VARCHAR" />
+    <result column="PARENT_TOPIC_NO" property="parentTopicNo" jdbcType="DECIMAL" />
+    <result column="STATUS" property="status" jdbcType="DECIMAL" />
+    <result column="CREATE_DATE" property="createDate" jdbcType="TIMESTAMP" />
+    <result column="CREATE_USER" property="createUser" jdbcType="VARCHAR" />
+    <result column="LAST_CHANGE_DATE" property="lastChangeDate" jdbcType="TIMESTAMP" />
+    <result column="LAST_CHANGE_USER" property="lastChangeUser" jdbcType="VARCHAR" />
+    <result column="IMPORTANT_LEVEL" property="importantLevel" jdbcType="DECIMAL" />
+    <result column="CAN_QUESTION" property="canQuestion" jdbcType="DECIMAL" />
+    <association property="directory" column="DIRECTORY_ID"
+    		javaType="com.auchan.bem.bem_pojo.entity.Directory">
+    	<id column="DIRECTORY_ID" property="id" jdbcType="DECIMAL" />
+    	<result column="PATH" property="path" jdbcType="VARCHAR" />
+	</association>
+	<collection property="childTopic" ofType="com.auchan.bem.bem_pojo.entity.Topic"
+			javaType="java.util.ArrayList" select="selectChildTopic"
+			column="TOPIC_NO">
+ 		<id column="TOPIC_NO" property="topicNo" jdbcType="DECIMAL" />
+	    <result column="NAME" property="name" jdbcType="VARCHAR" />
+    	<result column="EN_NAME" property="enName" jdbcType="VARCHAR" />
+	    <result column="PARENT_TOPIC_NO" property="parentTopicNo" jdbcType="DECIMAL" />
+	    <result column="STATUS" property="status" jdbcType="DECIMAL" />
+	    <result column="CREATE_DATE" property="createDate" jdbcType="TIMESTAMP" />
+	    <result column="CREATE_USER" property="createUser" jdbcType="VARCHAR" />
+	    <result column="IMPORTANT_LEVEL" property="importantLevel" jdbcType="DECIMAL" />
+	    <association property="directory" column="DIRECTORY_ID"
+	    		javaType="com.auchan.bem.bem_pojo.entity.Directory">
+	    	<id column="DIRECTORY_ID" property="id" jdbcType="DECIMAL" />
+	    	<result column="PATH" property="path" jdbcType="VARCHAR" />
+		</association>
+ 	</collection>
+  </resultMap>
+  
+  <resultMap id="NoChildResultMap" type="com.auchan.bem.bem_pojo.entity.Topic">
+  	<id column="TOPIC_NO" property="topicNo" jdbcType="DECIMAL" />
+    <result column="NAME" property="name" jdbcType="VARCHAR" />
+   	<result column="EN_NAME" property="enName" jdbcType="VARCHAR" />
+    <result column="PARENT_TOPIC_NO" property="parentTopicNo" jdbcType="DECIMAL" />
+    <result column="STATUS" property="status" jdbcType="DECIMAL" />
+    <result column="CREATE_DATE" property="createDate" jdbcType="TIMESTAMP" />
+    <result column="CREATE_USER" property="createUser" jdbcType="VARCHAR" />
+    <result column="LAST_CHANGE_DATE" property="lastChangeDate" jdbcType="TIMESTAMP" />
+    <result column="LAST_CHANGE_USER" property="lastChangeUser" jdbcType="VARCHAR" />
+    <result column="IMPORTANT_LEVEL" property="importantLevel" jdbcType="DECIMAL" />
+    <result column="CAN_QUESTION" property="canQuestion" jdbcType="DECIMAL" />
+    <association property="directory" column="DIRECTORY_ID"
+    		javaType="com.auchan.bem.bem_pojo.entity.Directory">
+    	<id column="DIRECTORY_ID" property="id" jdbcType="DECIMAL" />
+    	<result column="PATH" property="path" jdbcType="VARCHAR" />
+	</association>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    T1.TOPIC_NO, T1.NAME, T1.EN_NAME, T1.PARENT_TOPIC_NO, T1.STATUS,
+    T1.CREATE_DATE, T1.CREATE_USER, T1.DIRECTORY_ID,
+    T1.IMPORTANT_LEVEL, T1.CAN_QUESTION, T1.LAST_CHANGE_DATE, T1.LAST_CHANGE_USER,
+    T2.PATH
+  </sql>
+  
+  <select id="selectChildTopic" resultMap="NoChildResultMap" parameterType="java.lang.Short" >
+  	select 
+    <include refid="Base_Column_List" />
+    from T_TOPIC T1, T_DIRECTORY T2
+    where
+    T1.DIRECTORY_ID = T2.ID and
+    T1.PARENT_TOPIC_NO = #{topicNo,jdbcType=DECIMAL} and T1.STATUS = 1
+    order by T1.IMPORTANT_LEVEL
+  </select>
+  
+  <select id="selectTopicByParentNo" resultMap="BaseResultMap" parameterType="java.lang.Short" >
+    select 
+    <include refid="Base_Column_List" />
+    from T_TOPIC T1, T_DIRECTORY T2
+    <where>
+    	T1.DIRECTORY_ID = T2.ID and
+    	<choose>
+    		<when test="_parameter != null">
+    			T1.PARENT_TOPIC_NO = #{topicNo,jdbcType=DECIMAL}
+    		</when>
+    		<otherwise>
+    			T1.PARENT_TOPIC_NO IS NULL
+    		</otherwise>
+    	</choose>
+    	and T1.STATUS = 1
+   	</where>
+    order by T1.IMPORTANT_LEVEL
+  </select>
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Short" >
+    select 
+    <include refid="Base_Column_List" />
+    from T_TOPIC T1, T_DIRECTORY T2
+    where
+    T1.DIRECTORY_ID = T2.ID and
+    TOPIC_NO = #{topicNo,jdbcType=DECIMAL}
+    and STATUS = 1
+  </select>
+  
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Short" >
+    delete from T_TOPIC
+    where TOPIC_NO = #{topicNo,jdbcType=DECIMAL}
+  </delete>
+  
+  <select id="selectTopicNo" resultType="java.lang.Short">
+  SELECT SEQ_T_TOPIC.NEXTVAL FROM DUAL
+  </select>
+  
+  <insert id="insertTopic" parameterType="com.auchan.bem.bem_pojo.entity.Topic" >
+    insert into T_TOPIC
+    (TOPIC_NO, NAME, EN_NAME, PARENT_TOPIC_NO, STATUS, CREATE_DATE, CREATE_USER, DIRECTORY_ID, IMPORTANT_LEVEL, CAN_QUESTION)
+    values
+    (#{topicNo,jdbcType=DECIMAL},
+    #{name,jdbcType=VARCHAR},
+    #{enName,jdbcType=VARCHAR},
+    #{parentTopicNo,jdbcType=DECIMAL},
+    1,
+    sysdate,
+    #{createUser,jdbcType=VARCHAR},
+    #{directory.id,jdbcType=DECIMAL},
+    #{importantLevel,jdbcType=DECIMAL},
+    #{canQuestion,jdbcType=DECIMAL})
+  </insert>
+  
+  <update id="updateTopic" parameterType="com.auchan.bem.bem_pojo.entity.Topic" >
+    update T_TOPIC
+    set
+    <if test="name != null">
+    NAME = #{name,jdbcType=VARCHAR},
+    </if>
+    <if test="enName != null">
+    EN_NAME = #{enName,jdbcType=VARCHAR},
+    </if>
+    <if test="parentTopicNo != null">
+    PARENT_TOPIC_NO = #{parentTopicNo,jdbcType=DECIMAL},
+    </if>
+    <if test="directory != null and directory.id != null">
+    DIRECTORY_ID = #{directory.id,jdbcType=DECIMAL},
+    </if>
+    <if test="importantLevel != null">
+    IMPORTANT_LEVEL = #{importantLevel,jdbcType=DECIMAL},
+    </if>
+    <if test="canQuestion != null">
+    CAN_QUESTION = #{canQuestion,jdbcType=DECIMAL},
+    </if>
+    <if test="status != null">
+    STATUS = #{status,jdbcType=DECIMAL},
+    </if>
+    LAST_CHANGE_USER = #{lastChangeUser,jdbcType=VARCHAR},
+    LAST_CHANGE_DATE = sysdate
+    <where>
+    TOPIC_NO = #{topicNo,jdbcType=DECIMAL}
+    <if test="status != null">
+    or (PARENT_TOPIC_NO = #{topicNo,jdbcType=DECIMAL} and STATUS &lt;&gt; 0)
+    </if>
+    </where>
+  </update>
+  
+  <update id="updateDownImportantLevel" parameterType="java.util.Map">
+	update T_TOPIC
+	set IMPORTANT_LEVEL=IMPORTANT_LEVEL+1,
+	LAST_CHANGE_USER='sys',
+	LAST_CHANGE_DATE=sysdate
+	where
+	IMPORTANT_LEVEL
+	between #{startLevel,jdbcType=DECIMAL} and #{endLevel,jdbcType=DECIMAL}
+  </update>
+  
+  <update id="updateUpImportantLevel" parameterType="java.util.Map">
+	update T_TOPIC
+	set IMPORTANT_LEVEL=IMPORTANT_LEVEL-1,
+	LAST_CHANGE_USER='sys',
+	LAST_CHANGE_DATE=sysdate
+	where
+	IMPORTANT_LEVEL
+	between #{startLevel,jdbcType=DECIMAL} and #{endLevel,jdbcType=DECIMAL}
+  </update>
+  
+  <update id="updateChildImportantLevel">
+	update T_TOPIC T
+	set IMPORTANT_LEVEL = to_number((select to_char(IMPORTANT_LEVEL)
+	from T_TOPIC
+	where TOPIC_NO = T.PARENT_TOPIC_NO) ||
+	substr(to_char(IMPORTANT_LEVEL),
+	length(to_char(IMPORTANT_LEVEL)) - 1)),
+	LAST_CHANGE_USER='sys',
+	LAST_CHANGE_DATE=sysdate
+  </update>
+</mapper>

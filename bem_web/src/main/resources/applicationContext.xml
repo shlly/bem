@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:util="http://www.springframework.org/schema/util" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:sec="http://www.springframework.org/schema/security"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	                                 http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+	                                 http://www.springframework.org/schema/context
+	                                 http://www.springframework.org/schema/context/spring-context-4.0.xsd
+	                                 http://www.springframework.org/schema/mvc
+	                                 http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd
+	                                 http://www.springframework.org/schema/security
+	                                 http://www.springframework.org/schema/security/spring-security-4.0.xsd">
+	
+	<!-- 导入配置文件 -->
+	<import resource="spring-database.xml" />
+	<import resource="spring-mybatis.xml" />
+	<import resource="spring-security.xml" />
+	
+	<!-- <bean id="myApplicationHelper" class="com.auchan.bem.bem_web.application.MyApplicationHelper"/> -->
+	
+	<!-- 自动扫描 -->
+	<context:component-scan base-package="com.auchan.bem.bem_service" />
+	<!-- 全局异常处理 -->
+	<bean id="exceptionHandler" class="com.auchan.bem.bem_web.Interceptor.PublicExceptionHandler"/>
+	
+	<!-- DAO接口所在包名，Spring会自动查找其下的类 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.auchan.bem.bem_dao" />
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
+	</bean>
+	
+	 <!-- 支持上传文件
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver"/> -->
+    
+	
+  
+</beans>

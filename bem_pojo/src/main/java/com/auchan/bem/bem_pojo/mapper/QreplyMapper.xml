@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.auchan.bem.bem_dao.QreplyDAO" >
+	 <resultMap type="com.auchan.bem.bem_pojo.entity.Qreply" id="baseResultMap">
+  	 <id column="ID" property="rid" jdbcType="INTEGER" />
+  	 <result column="T_TITLE_NO" property="ttitleno" jdbcType="INTEGER" />
+  	 <result column="CONTENT" property="content" jdbcType="VARCHAR" />
+  	 <result column="LDAPID" property="ldapid" jdbcType="VARCHAR" /> 
+  	 <result column="CREATE_DATE" property="createDate" jdbcType="DATE" />   
+ </resultMap>
+ 	 
+  <select id="selectByPrimaryKey" resultMap="baseResultMap" parameterType="java.lang.Integer" >
+   select * from T_QREPLY T where T.T_TITLE_NO= #{ttitleno,jdbcType=INTEGER}
+  </select>
+  
+  <insert id="saveQreply" parameterType="com.auchan.bem.bem_pojo.entity.Qreply" >
+    insert into T_QREPLY 
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="ttitleno != null" >
+        T_TITLE_NO, 
+      </if>
+      <if test="content != null" >
+        CONTENT,
+      </if>
+      <if test="ldapid != null" >
+        LDAPID,
+      </if>
+      <if test="createDate != null" >
+        CREATE_DATE,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="ttitleno != null" >
+        #{ttitleno,jdbcType=DECIMAL},
+      </if>
+       <if test="content != null" >
+        #{content,jdbcType=VARCHAR},
+      </if>
+       <if test="ldapid != null" >
+        #{ldapid,jdbcType=VARCHAR},
+      </if>
+       <if test="createDate != null" >
+        #{createDate,jdbcType=DATE},
+      </if>
+    </trim>
+  </insert>
+</mapper>

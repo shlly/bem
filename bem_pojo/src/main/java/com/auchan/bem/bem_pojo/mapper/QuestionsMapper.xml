@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.auchan.bem.bem_dao.QuestionsDAO" >
+	 <resultMap type="com.auchan.bem.bem_pojo.entity.Questions" id="queryTopicMap">
+  	 <id column="Q_NO" property="q_no" jdbcType="INTEGER" />
+  	 <result column="TITLE" property="title" jdbcType="VARCHAR" />
+  	 <result column="DIVISION" property="divisionNo" jdbcType="VARCHAR" />
+  	 <result column="ORG_NO" property="org_no" jdbcType="INTEGER" />
+  	 <result column="SECTION" property="sectionNo" jdbcType="VARCHAR" />
+  	 <result column="LDAPID" property="ldapid" jdbcType="VARCHAR" /> 
+  	 <result column="CONTENT" property="content" jdbcType="VARCHAR" />   
+  	 <result column="CDATE" property="cdate" jdbcType="DATE" />
+  	 <association property="qreply" column="RID" javaType="com.auchan.bem.bem_pojo.entity.Qreply"> 
+  	 <id column="RID" jdbcType="DECIMAL" property="rid" />
+  	 <result column="CREATE_DATE" property="createDate" jdbcType="DATE" />
+  	 </association>
+  	 <association property="division" column="DIVISION_NO" javaType="com.auchan.bem.bem_pojo.entity.Division">
+   		<id column="DIVISION_NO" jdbcType="DECIMAL" property="divisionNo" />
+    	<result column="DIVISION_NAME" jdbcType="VARCHAR" property="name" />
+    	<result column="DIVISION_EN_NAME" jdbcType="VARCHAR" property="enName" />
+	</association>
+ 	<association property="section" column="SECTION_NO" javaType="com.auchan.bem.bem_pojo.entity.Section">
+	    <id column="SECTION_NO" jdbcType="DECIMAL" property="sectionNo" />
+	    <result column="SECTION_NAME" jdbcType="VARCHAR" property="name" />
+	    <result column="SECTION_EN_NAME" jdbcType="VARCHAR" property="enName" />
+	</association>
+ </resultMap>
+ 	<sql id="Base_Column_List" >
+ 	A.Q_NO,A.ORG_NO,A.TITLE,A.DIVISION, A.SECTION,A.CDATE,A.SECTION_NAME,A.DIVISION_NAME,A.LDAPID,B.CREATE_DATE
+ 	</sql>
+  <select id="selectByTopic" resultType="java.lang.Integer" parameterType="java.lang.Integer">
+  select count(*)
+   from 
+  (select T1.Q_NO,T1.ORG_NO,T1.TITLE,T1.DIVISION,T1.SECTION,T1.CDATE,T1.LDAPID,T3.NAME as SECTION_NAME, 
+  T4.NAME as DIVISION_NAME FROM T_QUESTION T1,T_DIVISION T4, T_SECTION T3 
+  WHERE T1.STATUS=0 
+  AND T1.ORG_NO= #{orgno,jdbcType=INTEGER}  
+  AND T1.DIVISION = T4.DIVISION_NO 
+  AND T1.SECTION = T3.SECTION_NO)A left join  
+  (select t_title_no,max(create_date)CREATE_DATE  
+  from T_qreply group by T_TITLE_NO)B on a.q_no=b.t_title_no 
+  </select>
+  
+  
+  <select id="selectByTopicSort" resultMap="queryTopicMap" parameterType="java.lang.Integer">
+   select * from
+      (select
+        TT.*, ROWNUM AS rowno
+      from
+  	    (select
+  <include refid="Base_Column_List" />
+  from 
+  (select T1.Q_NO,T1.ORG_NO,T1.TITLE,T1.DIVISION,T1.SECTION,T1.CDATE,T1.LDAPID,T3.NAME as SECTION_NAME, 
+  T4.NAME as DIVISION_NAME FROM T_QUESTION T1,T_DIVISION T4, T_SECTION T3 
+  WHERE T1.STATUS=0 
+  AND T1.ORG_NO= #{orgno,jdbcType=INTEGER}  
+  AND T1.DIVISION = T4.DIVISION_NO 
+  AND T1.SECTION = T3.SECTION_NO)A left join  
+  (select t_title_no,max(create_date)CREATE_DATE  
+  from T_qreply group by T_TITLE_NO)B on a.q_no=b.t_title_no
+  order by
+        <if test="sort.sort != null and sort.order != null">
+        ${sort.sort} ${sort.order},
+        </if>
+        q_no DESC
+        ) TT
+      <if test="sort.limit != null">
+      where ROWNUM &lt;= (${sort.offset} + ${sort.limit})
+      </if>) T
+    <if test="sort.limit != null">
+    where rowno &gt;= (${sort.offset} + 1)
+    </if>
+  </select>
+  
+  
+  <select id="selectByPrimaryKey" resultMap="queryTopicMap" parameterType="java.lang.Integer" >
+  select A.Q_NO,A.TITLE,A.DIVISION, A.SECTION,A.CDATE,A.SECTION_NAME,A.DIVISION_NAME,A.CONTENT,A.LDAPID,A.ORG_NO,B.CREATE_DATE  
+  from (select T1.Q_NO,T1.TITLE,T1.DIVISION,T1.SECTION,T1.CDATE ,T1.ORG_NO,T1.CONTENT,T1.LDAPID,T3.NAME as SECTION_NAME, 
+  T4.NAME as DIVISION_NAME FROM T_QUESTION T1,T_DIVISION T4, T_SECTION T3 
+  WHERE T1.STATUS=0 
+  AND T1.Q_NO= #{q_no,jdbcType=INTEGER}  
+  AND T1.DIVISION = T4.DIVISION_NO 
+  AND T1.SECTION = T3.SECTION_NO)A left join  
+  (select t_title_no,max(create_date)CREATE_DATE  
+  from T_qreply group by T_TITLE_NO)B on a.q_no=b.t_title_no 
+  </select>
+  
+  <insert id="saveQuestion" parameterType="com.auchan.bem.bem_pojo.entity.Questions" >
+   <selectKey resultType="java.lang.Integer" order="BEFORE" keyProperty="q_no">  
+        <!-- select CAST(RANDOM * 100000 as INTEGER) a FROM SYSTEM.SYSDUMMY1 -->
+		 SELECT SEQ_T_QUESTION.NEXTVAL as q_no FROM DUAL
+    </selectKey>  
+    insert into T_QUESTION
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="title != null" >
+        TITLE,
+      </if>
+      <if test="ldapid != null" >
+        LDAPID,
+      </if>
+       <if test="ldapid != null" >
+        CDATE,
+        </if>
+      <if test="content != null" >
+        CONTENT,
+      </if>
+      <if test="org_no != null" >
+        ORG_NO,
+      </if>
+      <if test="divisionNo != null" >
+        DIVISION,
+      </if>
+      <if test="sectionNo != null" >
+        SECTION,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="title != null" >
+        #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="ldapid != null" >
+        #{ldapid,jdbcType=VARCHAR},
+      </if>
+      SYSDATE,
+      <if test="content != null" >
+        #{content,jdbcType=VARCHAR},
+      </if>
+      <if test="org_no != null" >
+        #{org_no,jdbcType=DECIMAL},
+      </if>
+      <if test="divisionNo != null" >
+        #{divisionNo,jdbcType=DECIMAL},
+      </if>
+      <if test="sectionNo != null" >
+        #{sectionNo,jdbcType=DECIMAL},
+      </if>
+    </trim>
+  </insert>
+  
+   <select id="selectQuestionsSort" resultMap="queryTopicMap" parameterType="java.util.Map">
+   select * from
+      (select
+        TT.*, ROWNUM AS rowno
+      from
+  	    (
+   select 
+   <include refid="Base_Column_List" />
+  from (select T1.Q_NO,T1.ORG_NO,T1.TITLE,T1.DIVISION,T1.SECTION,T1.CDATE,T1.LDAPID,T3.NAME as SECTION_NAME, 
+  T4.NAME as DIVISION_NAME FROM T_QUESTION T1,T_DIVISION T4, T_SECTION T3 where  T1.STATUS=0 
+  AND T1.DIVISION = T4.DIVISION_NO  AND T1.SECTION = T3.SECTION_NO)A left join (select t_title_no,max(create_date)CREATE_DATE from T_qreply 
+  group by T_TITLE_NO)B  on a.q_no=b.t_title_no where 1=1 
+       		<trim suffix="" suffixOverrides="AND | OR">  
+        	<if test="questions.title != null">
+    		    AND A.TITLE like '%' || #{questions.title,jdbcType=VARCHAR} || '%'
+    	    </if>
+    	    <if test="questions.org_no != null and questions.org_no != null">
+    		    AND A.ORG_NO =#{questions.org_no,jdbcType=DECIMAL}
+    	    </if>
+    	    <if test="questions.division != null and questions.division.divisionNo != null">
+        		AND A.DIVISION = #{questions.division.divisionNo,jdbcType=DECIMAL}
+    	    </if>
+    	    <if test="questions.section != null and questions.section.sectionNo != null">
+    		    AND A.SECTION = #{questions.section.sectionNo,jdbcType=DECIMAL} 
+    	    </if>
+    	    <if test="startDate != null and startDate != ''">
+    		    AND TO_CHAR(A.CDATE, 'yyyy-mm-dd') &gt;= #{startDate,jdbcType=VARCHAR} 
+    	    </if>
+    	    <if test="endDate != null and endDate != ''">
+        		AND TO_CHAR(A.CDATE, 'yyyy-mm-dd') &lt;= #{endDate,jdbcType=VARCHAR} 
+    	    </if>
+	</trim>
+	order by
+        <if test="sort.sort != null and sort.order != null">
+        ${sort.sort} ${sort.order},
+        </if>
+        q_no DESC
+        ) TT
+      <if test="sort.limit != null">
+      where ROWNUM &lt;= (${sort.offset} + ${sort.limit})
+      </if>) T
+    <if test="sort.limit != null">
+    where rowno &gt;= (${sort.offset} + 1)
+    </if>
+  </select>
+  
+   <select id="selectQuestions" resultType="java.lang.Integer" parameterType="java.util.Map">
+   select count(*) 
+  from (select T1.Q_NO,T1.ORG_NO,T1.TITLE,T1.DIVISION,T1.SECTION,T1.CDATE,T1.LDAPID,T3.NAME as SECTION_NAME, 
+  T4.NAME as DIVISION_NAME FROM T_QUESTION T1,T_DIVISION T4, T_SECTION T3 where  T1.STATUS=0 
+  AND T1.DIVISION = T4.DIVISION_NO  AND T1.SECTION = T3.SECTION_NO)A left join (select t_title_no,max(create_date)CREATE_DATE from T_qreply 
+  group by T_TITLE_NO)B  on a.q_no=b.t_title_no where 1=1 
+       		<trim suffix="" suffixOverrides="AND | OR">  
+        	<if test="questions.title != null">
+    		    AND A.TITLE like '%' || #{questions.title,jdbcType=VARCHAR} || '%'
+    	    </if>
+    	    <if test="questions.org_no != null and questions.org_no != null">
+    		    AND A.ORG_NO =#{questions.org_no,jdbcType=DECIMAL}
+    	    </if>
+    	    <if test="questions.division != null and questions.division.divisionNo != null">
+        		AND A.DIVISION = #{questions.division.divisionNo,jdbcType=DECIMAL}
+    	    </if>
+    	    <if test="questions.section != null and questions.section.sectionNo != null">
+    		    AND A.SECTION = #{questions.section.sectionNo,jdbcType=DECIMAL} 
+    	    </if>
+    	    <if test="startDate != null and startDate != ''">
+    		    AND TO_CHAR(A.CDATE, 'yyyy-mm-dd') &gt;= #{startDate,jdbcType=VARCHAR} 
+    	    </if>
+    	    <if test="endDate != null and endDate != ''">
+        		AND TO_CHAR(A.CDATE, 'yyyy-mm-dd') &lt;= #{endDate,jdbcType=VARCHAR} 
+    	    </if>
+	</trim>
+  </select>
+  <update id="closeQuestion" parameterType="java.lang.Integer">
+  	update t_question set status=1 where q_no=#{q_no,jdbcType=DECIMAL}
+  </update>
+</mapper>

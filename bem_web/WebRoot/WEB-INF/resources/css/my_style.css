@@ -1,0 +1,333 @@
+* {
+	font-family: 微软雅黑;
+}
+.sweet-alert {
+	font-family: 微软雅黑;
+}
+h1, h2, h3, h4, h5, h6, label, span, ul, li, p, small, strong, div {
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	-ms-user-select: none;
+	-khtml-user-select: none;
+	user-select: none;
+	cursor: default;
+}
+a {
+	blr: expression(this.onFocus=this.blur());
+}
+a:focus {
+	outline: none;
+}
+a.hidefocus {
+	outline: none;
+}
+.hidden {
+	display: none;
+}
+.pointer {
+	cursor: pointer;
+}
+button * {
+	cursor: pointer;
+}
+
+#auth {
+	display: none;
+}
+#rollTop {
+	position: fixed;
+	right: 10px;
+	bottom: 50px;
+	z-index: 99999;
+	display: none;
+}
+
+#noDate {
+	text-align: center;
+	font-size: 20px;
+	margin-top: 15px;
+}
+
+.logoPic {
+	text-align: center;
+	margin-top: 100px;
+	margin-bottom: 30px;
+}
+
+.defaultColor {
+	color: #1ab394;
+}
+.errorColor {
+	color: #ec4758;
+}
+.warnColor {
+	color: #f8ac59;
+}
+
+.switchery small {
+	cursor: pointer;
+}
+
+.gray-bg {
+	
+}
+
+.table > tbody > tr > td, .table > thead > tr > th {
+	font-size: 8px;
+	text-align: center;
+	vertical-align: middle;
+}
+
+.colorText {
+	color: #1ab394;
+}
+
+.note-editor .note-editable, .note-editor .note-editable > * {
+	cursor: text;
+	color: black;
+}
+.note-editor {
+	border: 1px solid #e5e6e7;
+	transition: all 250ms;
+	-moz-transition: all 250ms;
+	-webkit-transition: all 250ms;
+	-o-transition: all 250ms;
+}
+
+/* modal */
+
+
+/* navbar-top-links */
+.navbar-top-links .logout:HOVER {
+	text-decoration: underline;
+}
+
+/* breadcrumb */
+.breadcrumb >li > a:HOVER {
+	text-decoration: underline;
+}
+
+/* metismenu */
+.metismenu > li * {
+	cursor: pointer;
+}
+.metismenu  li > a:HOVER {
+	text-decoration: underline;
+}
+.metismenu .nav-header  *{
+	cursor: default;
+}
+
+/* file management */
+.file-manager .active[filter] {
+	color: #1ab394;
+}
+.file-manager .active[sort] {
+	color: white;
+	background-color: #1ab394;
+}
+.file-manager .underline:HOVER {
+	text-decoration: underline;
+}
+.file-manager .displayStyle .active1 {
+	background-color: #1ab394;
+	color: white;
+}
+#filePanel {
+	margin-top: 10px;
+	padding: 0px;
+}
+#summaryPanel {
+	margin-top: 10px;
+	padding: 0px;
+}
+#filePanel #fileTable_length select {
+	font-size: 2px;
+	padding-left: 2px;
+	padding-right: 2px;
+	padding-top: 5px;
+	padding-bottom: 5px;
+}
+#filePanel #fileTable_length label {
+	height: 35px;
+	line-height: 35px;
+	margin: 0px;
+}
+.fileSearch select {
+	cursor: pointer;
+}
+
+/* file-table */
+.file-table tbody tr td:first-child {
+	display: none;
+}
+.file-table thead tr th:first-child {
+	display: none;
+}
+.file-table thead tr th:nth-child(7) {
+	display: none;
+}
+.file-table tbody tr td:last-child {
+	display: none;
+}
+.file-table thead tr th:last-child {
+	display: none;
+}
+.file-table tbody tr td {
+	text-align: center;
+	vertical-align: middle;
+}
+.file-table tbody tr td:nth-child(3) {
+	text-align: left;
+	word-break: break-all;
+	min-width: 150px;
+}
+.file-table tbody tr td:nth-child(4) {
+	min-width: 150px;
+}
+.file-table tbody tr td:nth-child(5) {
+	min-width: 50px;
+}
+.file-table tbody tr td:nth-child(6) {
+	min-width: 50px;
+}
+.file-table tbody tr td:nth-child(7) {
+	min-width: 80px;
+	display: none;
+}
+.file-table tbody tr td:nth-child(8) {
+	min-width: 30px;
+}
+.file-table tbody tr td:nth-child(9) {
+	min-width: 30px;
+}
+.file-table tbody tr td:nth-child(10) {
+	min-width: 60px;
+}
+.file-table tbody tr td:nth-child(11) {
+	min-width: 50px;
+}
+.file-table tbody tr td .btn {
+	padding: 3px 8px;
+}
+#summaryTable > thead > tr > th {
+	text-align: center;
+	vertical-align: middle;
+}
+#summaryTable tr {
+	font-size: 10px;
+	text-align: center;
+	vertical-align: middle;
+}
+#summaryTable tbody tr td {
+	vertical-align: middle;
+	text-align: left;
+}
+#summaryTable tbody tr td:nth-child(3) {
+	text-align: center;
+}
+
+/* searchForm */
+#searchForm > div > div {
+	padding-left: 5px;
+	padding-right: 5px;
+	float: left;
+}
+#searchForm .row {
+	margin-bottom: 0px;
+}
+
+.multiselect {
+	border-color: #ed5565;
+	border-radius: 0px;
+}
+
+/* ui-autocomplete */
+.ui-corner-all {
+	border-radius: 0px;
+}
+
+.my-table th, .my-table td {
+	text-align: center;
+}
+
+/* animationTable */
+#animationTable td, #animationTable th {
+	border-left: none;
+	border-right: none;
+}
+#animationTable tr, #animationTable td {
+	height: 56px;
+}
+#animationTable > tbody > tr {
+	cursor: pointer;
+	transition: all 250ms;
+	-moz-transition: all 250ms;
+	-webkit-transition: all 250ms;
+	-o-transition: all 250ms;
+}
+#animationTable > tbody > tr span {
+	cursor: pointer;
+}
+#animationTable > tbody > tr:hover {
+	transform: scale(0.95, 0.95);
+	-ms-transform: scale(0.95, 0.95);
+	-webkit-transform: scale(0.95, 0.95);
+	-o-transform: scale(0.95, 0.95);
+	-moz-transform: scale(0.95, 0.95);
+}
+#animationTable > tbody > tr td:nth-child(2) strong {
+	cursor: pointer;
+	font-size: 15px;
+}
+#animationTable > tbody > tr td:nth-child(2) .small {
+	cursor: pointer;
+	font-size: 5px;
+	padding-left: 20px;
+}
+#animationTable > tbody > tr:hover td:nth-child(2) strong {
+	text-decoration: underline;
+}
+#animationTable > tbody > tr > td:nth-child(1) {
+	width: 70px;
+}
+#animationTable > tbody > tr > td:nth-child(2) {
+	text-align: left;
+	word-break: break-all;
+	padding-left:20px;
+}
+#animationTable > tbody > tr > td:nth-child(3) {
+	width: 150px;
+}
+#animationTable > tbody > tr > td:nth-child(4) {
+	width: 150px;
+}
+#animationTable > tbody > tr > td:nth-child(5) {
+	width: 70px;
+}
+
+/* topicTable */
+#topicTable > tbody > tr {
+	cursor: pointer;
+	transition: all 250ms;
+	-moz-transition: all 250ms;
+	-webkit-transition: all 250ms;
+	-o-transition: all 250ms;
+}
+#topicTable > tbody > tr:hover {
+	transform: scale(1.05, 1.05);
+	-ms-transform: scale(1.05, 1.05);
+	-webkit-transform: scale(1.05, 1.05);
+	-o-transform: scale(1.05, 1.05);
+	-moz-transform: scale(1.05, 1.05);
+	text-decoration: underline;
+}
+
+/* storeCheckBox */
+.storeCheckBox * {
+	cursor: pointer;
+}
+.storeCheckBox:hover label {
+	text-decoration: underline;
+	font-weight: bold;
+}

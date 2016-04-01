@@ -1,0 +1,494 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.auchan.bem.bem_dao.FileDAO" >
+  <resultMap id="BaseResultMap" type="com.auchan.bem.bem_pojo.entity.File" >
+    <id column="ID" property="id" jdbcType="DECIMAL" />
+    <result column="NAME" property="name" jdbcType="VARCHAR" />
+    <result column="FILE_SIZE" property="fileSize" jdbcType="DECIMAL" />
+    <result column="SIZE_UNIT" property="sizeUnit" jdbcType="DECIMAL" />
+    <result column="CREATE_DATE" property="createDate" jdbcType="TIMESTAMP" />
+    <result column="CREATE_USER" property="createUser" jdbcType="VARCHAR" />
+    <result column="DISCRIPTION" property="discription" jdbcType="VARCHAR" />
+    <result column="DOWNLOAD_TIMES" property="downloadTimes" jdbcType="DECIMAL" />
+    <result column="OTHER_STORE_VIEW" property="otherStoreView" jdbcType="DECIMAL" />
+    <association property="directory" column="DIRECTORY_ID"
+    		javaType="com.auchan.bem.bem_pojo.entity.Directory">
+    	<id column="DIRECTORY_ID" property="id" jdbcType="DECIMAL" />
+    	<result column="PATH" property="path" jdbcType="VARCHAR" />
+	</association>
+    <association property="typeIcon" column="TYPE_ID"
+    		javaType="com.auchan.bem.bem_pojo.entity.TypeIcon">
+		<id column="TYPE_ID" property="typeId" jdbcType="DECIMAL" />
+	    <result column="ICON" property="icon" jdbcType="VARCHAR" />
+ 	</association>
+ 	<association property="topic" column="TOPIC_NO"
+ 			javaType="com.auchan.bem.bem_pojo.entity.Topic">
+   		<id column="TOPIC_NO" property="topicNo" jdbcType="DECIMAL" />
+    	<result column="TOPIC_NAME" property="name" jdbcType="VARCHAR" />
+    	<result column="TOPIC_EN_NAME" property="enName" jdbcType="VARCHAR" />
+	</association>
+ 	<association property="division" column="DIVISION_NO"
+    		javaType="com.auchan.bem.bem_pojo.entity.Division">
+   		<id column="DIVISION_NO" jdbcType="DECIMAL" property="divisionNo" />
+    	<result column="DIVISION_NAME" jdbcType="VARCHAR" property="name" />
+    	<result column="DIVISION_EN_NAME" jdbcType="VARCHAR" property="enName" />
+	</association>
+ 	<association property="section" column="SECTION_NO"
+    		javaType="com.auchan.bem.bem_pojo.entity.Section">
+	    <id column="SECTION_NO" jdbcType="DECIMAL" property="sectionNo" />
+	    <result column="SECTION_NAME" jdbcType="VARCHAR" property="name" />
+	    <result column="SECTION_EN_NAME" jdbcType="VARCHAR" property="enName" />
+	</association>
+ 	<!-- <association property="store" column="STORE_NO"
+    		javaType="com.auchan.bem.bem_pojo.entity.Store">
+	    <id column="STORE_NO" jdbcType="DECIMAL" property="storeNo" />
+	    <result column="STORE_NAME" jdbcType="VARCHAR" property="name" />
+	</association> -->
+  </resultMap>
+  <sql id="Base_Column_List" >
+    T1.ID, T1.NAME, T1.FILE_SIZE, T1.SIZE_UNIT, T1.CREATE_DATE, T1.CREATE_USER, DISCRIPTION, DOWNLOAD_TIMES, OTHER_STORE_VIEW，
+    T1.TYPE_ID, T2.ICON,
+    T1.TOPIC_NO, T3.NAME as TOPIC_NAME, T3.EN_NAME as TOPIC_EN_NAME,
+    T1.DIRECTORY_ID, T4.PATH,
+    T1.DIVISION_NO, T5.NAME as DIVISION_NAME, T5.EN_NAME as DIVISION_EN_NAME,
+    T1.SECTION_NO, T6.NAME as SECTION_NAME, T6.EN_NAME as SECTION_EN_NAME<!-- ,
+    T7.STORE_NO, T7.NAME as STORE_NAME -->
+  </sql>
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+	from T_FILE T1
+	left join T_DIVISION T5 on T1.DIVISION_NO = T5.DIVISION_NO
+	left join T_SECTION T6 on T1.SECTION_NO = T6.SECTION_NO,
+	T_TYPE_ICON T2, T_TOPIC T3, T_DIRECTORY T4
+    where T1.ID = #{id,jdbcType=DECIMAL}
+    and T1.TYPE_ID = T2.TYPE_ID
+    and T1.TOPIC_NO = T3.TOPIC_NO
+    and T1.DIRECTORY_ID = T4.ID
+  </select>
+  
+  <select id="selectFilesByParentId" resultMap="BaseResultMap" parameterType="java.util.Map">
+    select * from
+      (select
+        TT.*, ROWNUM AS rowno
+      from
+  	    (select distinct
+  	    <include refid="Base_Column_List" />
+        from T_FILE T1
+        left join T_DIVISION T5 on T1.DIVISION_NO = T5.DIVISION_NO
+		left join T_SECTION T6 on T1.SECTION_NO = T6.SECTION_NO,
+		T_TYPE_ICON T2, T_TOPIC T3, T_DIRECTORY T4, <!-- T_STORE T7, --> T_FILE_STORE TFS
+        where T1.DIRECTORY_ID = #{parentId,jdbcType=DECIMAL}
+        and T1.TYPE_ID = T2.TYPE_ID
+        and T1.TOPIC_NO = T3.TOPIC_NO
+        and T1.DIRECTORY_ID = T4.ID
+        and (#{storeNo,jdbcType=DECIMAL} = -1 or
+        ((T1.OTHER_STORE_VIEW = 1) or (TFS.FILE_ID = T1.ID and (TFS.STORE_NO = #{storeNo,jdbcType=DECIMAL} or TFS.STORE_NO = -1))))
+        <!-- and T7.STORE_NO = #{storeNo,jdbcType=DECIMAL} -->
+        order by
+        <if test="sort.sort != null and sort.order != null">
+        ${sort.sort} ${sort.order},
+        </if>
+        T1.ID DESC
+        ) TT
+      <if test="sort.limit != null">
+      where ROWNUM &lt;= (${sort.offset} + ${sort.limit})
+      </if>) T
+    <if test="sort.limit != null">
+    where rowno &gt;= (${sort.offset} + 1)
+    </if>
+  </select>
+  <select id="selectFilesByParentIdTotal" resultType="java.lang.Integer" parameterType="java.util.Map">
+  	select count(*)
+  	from (select distinct T1.ID
+    from T_FILE T1
+    left join T_DIVISION T5
+      on T1.DIVISION_NO = T5.DIVISION_NO
+    left join T_SECTION T6
+      on T1.SECTION_NO = T6.SECTION_NO, T_TYPE_ICON T2, T_TOPIC T3,
+   	T_DIRECTORY T4, <!-- T_STORE T7, --> T_FILE_STORE TFS
+   	where T1.DIRECTORY_ID = #{parentId,jdbcType=DECIMAL}
+     and T1.TYPE_ID = T2.TYPE_ID
+     and T1.TOPIC_NO = T3.TOPIC_NO
+     and T1.DIRECTORY_ID = T4.ID
+     and (#{storeNo,jdbcType=DECIMAL} = -1 or
+     ((T1.OTHER_STORE_VIEW = 1) or (TFS.FILE_ID = T1.ID and (TFS.STORE_NO = #{storeNo,jdbcType=DECIMAL} or TFS.STORE_NO = -1))))
+     <!-- and T7.STORE_NO = #{storeNo,jdbcType=DECIMAL} -->)
+  </select>
+  
+  <select id="selectRecentFiles" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+    select * from
+      (select
+        TT.*, ROWNUM AS rowno
+      from
+  	    (select distinct
+  	    <include refid="Base_Column_List" />
+        from T_FILE T1
+        left join T_DIVISION T5 on T1.DIVISION_NO = T5.DIVISION_NO
+		left join T_SECTION T6 on T1.SECTION_NO = T6.SECTION_NO,
+		T_TYPE_ICON T2, T_TOPIC T3, T_DIRECTORY T4,
+		<!-- T_STORE T7, --> T_FILE_STORE TFS
+        where
+        <if test="topicNo != null">
+        T1.DIRECTORY_ID in
+          (select ID from T_DIRECTORY where PARENT_PATH_ID = 
+            (select DIRECTORY_ID from T_TOPIC where TOPIC_NO = #{topicNo,jdbcType=DECIMAL}))
+        and
+        </if>
+        TO_CHAR(T1.CREATE_DATE, 'yyyy-mm-dd') > TO_CHAR(ADD_MONTHS(SYSDATE, ${month}), 'yyyy-mm-dd')
+        and T1.TYPE_ID = T2.TYPE_ID
+        and T1.TOPIC_NO = T3.TOPIC_NO
+        and T1.DIRECTORY_ID = T4.ID
+		and (#{storeNo,jdbcType=DECIMAL} = -1 or
+		((T1.OTHER_STORE_VIEW = 1) or (TFS.FILE_ID = T1.ID and (TFS.STORE_NO = #{storeNo,jdbcType=DECIMAL} or TFS.STORE_NO = -1))))
+        order by
+        <if test="sort.sort != null and sort.order != null">
+        ${sort.sort} ${sort.order},
+        </if>
+        T1.ID DESC
+        ) TT
+      <if test="sort.limit != null">
+      where ROWNUM &lt;= (${sort.offset} + ${sort.limit})
+      </if>) T
+    <if test="sort.limit != null">
+    where rowno &gt;= (${sort.offset} + 1)
+    </if>
+  </select>
+  <select id="selectRecentFilesTotal" resultType="java.lang.Integer" parameterType="java.lang.Integer">
+  	select count(*)
+  	from (select
+  	distinct T1.ID
+    from T_FILE T1
+	left join T_DIVISION T5 on T1.DIVISION_NO = T5.DIVISION_NO
+	left join T_SECTION T6 on T1.SECTION_NO = T6.SECTION_NO,
+	T_TYPE_ICON T2, T_TOPIC T3, T_DIRECTORY T4,
+	<!-- T_STORE T7, --> T_FILE_STORE TFS
+    where
+    <if test="topicNo != null">
+      T1.DIRECTORY_ID in
+        (select ID from T_DIRECTORY where PARENT_PATH_ID = 
+          (select DIRECTORY_ID from T_TOPIC where TOPIC_NO = #{topicNo,jdbcType=DECIMAL}))
+      and
+    </if>
+    TO_CHAR(T1.CREATE_DATE, 'yyyy-mm-dd') > TO_CHAR(ADD_MONTHS(SYSDATE, ${month}), 'yyyy-mm-dd')
+    and T1.TYPE_ID = T2.TYPE_ID
+    and T1.TOPIC_NO = T3.TOPIC_NO
+    and T1.DIRECTORY_ID = T4.ID
+    and (#{storeNo,jdbcType=DECIMAL} = -1 or
+    ((T1.OTHER_STORE_VIEW = 1) or (TFS.FILE_ID = T1.ID and (TFS.STORE_NO = #{storeNo,jdbcType=DECIMAL} or TFS.STORE_NO = -1)))))
+  </select>
+  
+  <select id="selectFiles" resultMap="BaseResultMap" parameterType="java.util.Map">
+    select * from
+      (select
+        TT.*, ROWNUM AS rowno
+      from
+  	    (select distinct
+  	    <include refid="Base_Column_List" />
+	    from T_FILE T1
+		left join T_DIVISION T5 on T1.DIVISION_NO = T5.DIVISION_NO
+		left join T_SECTION T6 on T1.SECTION_NO = T6.SECTION_NO,
+		T_TYPE_ICON T2, T_TOPIC T3, T_DIRECTORY T4,
+		<!-- T_STORE T7, --> T_FILE_STORE TFS
+        <where>
+        	<if test="file.name != null">
+    		    T1.NAME like '%' || #{file.name,jdbcType=VARCHAR} || '%' and
+    	    </if>
+    	    <if test="file.topic != null and file.topic.topicNo != null">
+    		    (T1.TOPIC_NO = #{file.topic.topicNo,jdbcType=DECIMAL} or
+    		    T3.PARENT_TOPIC_NO = #{file.topic.topicNo,jdbcType=DECIMAL}) and
+    	    </if>
+    	    <if test="file.division != null and file.division.divisionNo != null">
+        		T1.DIVISION_NO = #{file.division.divisionNo,jdbcType=DECIMAL} and
+    	    </if>
+    	    <if test="file.section != null and file.section.sectionNo != null">
+    		    T1.SECTION_NO = #{file.section.sectionNo,jdbcType=DECIMAL} and
+    	    </if>
+    	    <if test="startDate != null and startDate != ''">
+    		    TO_CHAR(T1.CREATE_DATE, 'yyyy-mm-dd') &gt;= #{startDate,jdbcType=VARCHAR} and
+    	    </if>
+    	    <if test="endDate != null and endDate != ''">
+        		TO_CHAR(T1.CREATE_DATE, 'yyyy-mm-dd') &lt;= #{endDate,jdbcType=VARCHAR} and
+    	    </if>
+    	    T1.TYPE_ID = T2.TYPE_ID
+	        and (T1.TOPIC_NO = T3.TOPIC_NO
+	        or T1.TOPIC_NO = T3.PARENT_TOPIC_NO)
+	        and T1.DIRECTORY_ID = T4.ID
+		    and (#{storeNo,jdbcType=DECIMAL} = -1 or
+		    ((T1.OTHER_STORE_VIEW = 1) or (TFS.FILE_ID = T1.ID and (TFS.STORE_NO = #{storeNo,jdbcType=DECIMAL} or TFS.STORE_NO = -1))))
+        </where>
+        order by
+        <if test="sort.sort != null and sort.order != null">
+        ${sort.sort} ${sort.order},
+        </if>
+        T1.ID DESC
+        ) TT
+      <if test="sort.limit != null">
+      where ROWNUM &lt;= (${sort.offset} + ${sort.limit})
+      </if>) T
+    <if test="sort.limit != null">
+    where rowno &gt;= (${sort.offset} + 1)
+    </if>
+  </select>
+  <select id="selectFilesTotal" resultType="java.lang.Integer" parameterType="java.util.Map">
+  	select count(*)
+  	from (select
+  	distinct T1.ID
+    from T_FILE T1
+	left join T_DIVISION T5 on T1.DIVISION_NO = T5.DIVISION_NO
+	left join T_SECTION T6 on T1.SECTION_NO = T6.SECTION_NO,
+	T_TYPE_ICON T2, T_TOPIC T3, T_DIRECTORY T4,
+	<!-- T_STORE T7, --> T_FILE_STORE TFS
+    <where>
+    	<if test="file.name != null">
+   		    T1.NAME like '%' || #{file.name,jdbcType=VARCHAR} || '%' and
+   	    </if>
+    	<if test="file.topic != null and file.topic.topicNo != null">
+    		(T1.TOPIC_NO = #{file.topic.topicNo,jdbcType=DECIMAL} or
+    		    T3.PARENT_TOPIC_NO = #{file.topic.topicNo,jdbcType=DECIMAL}) and
+    	</if>
+    	<if test="file.division != null and file.division.divisionNo != null">
+    		T1.DIVISION_NO = #{file.division.divisionNo,jdbcType=DECIMAL} and
+    	</if>
+    	<if test="file.section != null and file.section.sectionNo != null">
+    		T1.SECTION_NO = #{file.section.sectionNo,jdbcType=DECIMAL} and
+    	</if>
+    	<if test="startDate != null and startDate != ''">
+    		TO_CHAR(T1.CREATE_DATE, 'yyyy-mm-dd') &gt;= #{startDate,jdbcType=VARCHAR} and
+    	</if>
+    	<if test="endDate != null and endDate != ''">
+    		TO_CHAR(T1.CREATE_DATE, 'yyyy-mm-dd') &lt;= #{endDate,jdbcType=VARCHAR} and
+    	</if>
+    	T1.TYPE_ID = T2.TYPE_ID
+        and (T1.TOPIC_NO = T3.TOPIC_NO
+        or T1.TOPIC_NO = T3.PARENT_TOPIC_NO)
+	    and T1.DIRECTORY_ID = T4.ID
+	    and (#{storeNo,jdbcType=DECIMAL} = -1 or
+	    ((T1.OTHER_STORE_VIEW = 1) or (TFS.FILE_ID = T1.ID and (TFS.STORE_NO = #{storeNo,jdbcType=DECIMAL} or TFS.STORE_NO = -1)))))
+    </where>
+  </select>
+  
+  <insert id="insertFile" parameterType="com.auchan.bem.bem_pojo.entity.File" >
+  	<selectKey resultType="java.lang.Integer" order="BEFORE" keyProperty="id">
+	SELECT SEQ_T_FILE.NEXTVAL FROM DUAL
+	</selectKey>
+	insert into T_FILE
+	(
+		ID,
+		NAME,
+		DIRECTORY_ID,
+		FILE_SIZE,
+		SIZE_UNIT,
+		CREATE_DATE,
+		CREATE_USER,
+		TYPE_ID,
+		<if test="division != null and division.divisionNo != null">
+    		DIVISION_NO,
+    	</if>
+		<if test="section != null and section.sectionNo != null">
+			SECTION_NO,
+    	</if>
+		TOPIC_NO,
+		OTHER_STORE_VIEW
+    )
+    values
+    (
+		#{id,jdbcType=DECIMAL},
+		#{name,jdbcType=VARCHAR},
+		#{directory.id,jdbcType=DECIMAL},
+		#{fileSize,jdbcType=DECIMAL},
+		#{sizeUnit,jdbcType=DECIMAL},
+		SYSDATE,
+		#{createUser,jdbcType=VARCHAR},
+		#{typeIcon.typeId,jdbcType=DECIMAL},
+		<if test="division != null and division.divisionNo != null">
+   			#{division.divisionNo,jdbcType=DECIMAL},
+    	</if>
+		<if test="section != null and section.sectionNo != null">
+			#{section.sectionNo,jdbcType=DECIMAL},
+    	</if>
+		#{topic.topicNo,jdbcType=DECIMAL},
+		#{otherStoreView,jdbcType=DECIMAL}
+    )
+  </insert>
+  
+  <insert id="insertDeleteFilesById" parameterType="java.util.Map">
+  	insert into T_DEL_FILE
+  	(
+  		ID,
+		NAME,
+		DIRECTORY_ID,
+		FILE_SIZE,
+		SIZE_UNIT,
+		CREATE_DATE,
+		CREATE_USER,
+		TYPE_ID,
+		DIVISION_NO,
+		SECTION_NO,
+		TOPIC_NO,
+		DEL_DATE,
+		DEL_USER,
+		OG_ID,
+		DOWNLOAD_TIMES,
+		OTHER_STORE_VIEW
+  	)
+  	(
+	  	select
+	  		SEQ_T_DEL_FILE.NEXTVAL as ID,
+	  		T.ID as OG_ID, T.NAME, T.FILE_SIZE, T.SIZE_UNIT, T.CREATE_DATE, T.CREATE_USER,
+		    T.TYPE_ID, T.TOPIC_NO, T.DIRECTORY_ID, T.DIVISION_NO, T.SECTION_NO, T.DOWNLOAD_TIMES, T.OTHER_STORE_VIEW,
+	  		SYSDATE as DEL_DATE, #{username,jdbcType=VARCHAR} as DEL_USER
+	  	from T_FILE T
+	  	where
+	  	id in
+	  	(
+		  	<foreach collection="deleteFilesId" item="deleteFileId" index="index" separator=", " >
+		   		#{deleteFileId,jdbcType=DECIMAL}
+			</foreach>
+		)
+  	)
+  </insert>
+  
+  <delete id="deleteByIds" parameterType="java.util.List">
+  	delete T_FILE where
+  	id in
+  	(
+	  	<foreach collection="deleteFilesId" item="deleteFileId" index="index" separator=", " >
+	   		#{deleteFileId,jdbcType=DECIMAL}
+		</foreach>
+	)
+  </delete>
+  
+  <insert id="insertDeleteFileById" parameterType="java.util.Map">
+  	insert into T_DEL_FILE
+  	(
+  		ID,
+		NAME,
+		DIRECTORY_ID,
+		FILE_SIZE,
+		SIZE_UNIT,
+		CREATE_DATE,
+		CREATE_USER,
+		TYPE_ID,
+		DIVISION_NO,
+		SECTION_NO,
+		TOPIC_NO,
+		DEL_DATE,
+		DEL_USER,
+		OG_ID,
+		DOWNLOAD_TIMES,
+		OTHER_STORE_VIEW
+  	)
+  	(
+	  	select
+	  		SEQ_T_DEL_FILE.NEXTVAL as ID,
+	  		T.ID as OG_ID, T.NAME, T.FILE_SIZE, T.SIZE_UNIT, T.CREATE_DATE, T.CREATE_USER,
+		    T.TYPE_ID, T.TOPIC_NO, T.DIRECTORY_ID, T.DIVISION_NO, T.SECTION_NO, T.DOWNLOAD_TIMES, T.OTHER_STORE_VIEW,
+	  		SYSDATE as DEL_DATE, #{username,jdbcType=VARCHAR} as DEL_USER
+	  	from T_FILE T
+	  	where
+	  	id = #{deleteFileId,jdbcType=DECIMAL}
+  	)
+  </insert>
+  
+  <delete id="deleteById" parameterType="java.lang.Integer">
+  	delete T_FILE where
+  	id = #{deleteFileId,jdbcType=DECIMAL}
+  </delete>
+  
+  <insert id="insertDeleteFile" parameterType="java.util.Map" >
+	insert into T_DEL_FILE
+	(
+		ID,
+		NAME,
+		DIRECTORY_ID,
+		FILE_SIZE,
+		SIZE_UNIT,
+		CREATE_DATE,
+		CREATE_USER,
+		TYPE_ID,
+		<if test="file.division != null and file.division.divisionNo != null">
+    		DIVISION_NO,
+    	</if>
+		<if test="file.section != null and file.section.sectionNo != null">
+			SECTION_NO,
+    	</if>
+		TOPIC_NO,
+		DEL_DATE,
+		DEL_USER,
+		OG_ID,
+		DOWNLOAD_TIMES,
+		OTHER_STORE_VIEW
+    )
+    values
+    (
+    	SEQ_T_DEL_FILE.NEXTVAL,
+		#{file.name,jdbcType=VARCHAR},
+		#{file.directory.id,jdbcType=DECIMAL},
+		#{file.fileSize,jdbcType=DECIMAL},
+		#{file.sizeUnit,jdbcType=DECIMAL},
+		#{file.createDate,jdbcType=TIMESTAMP},
+		#{file.createUser,jdbcType=VARCHAR},
+		#{file.typeIcon.typeId,jdbcType=DECIMAL},
+		<if test="file.division != null and file.division.divisionNo != null">
+   			#{file.division.divisionNo,jdbcType=DECIMAL},
+    	</if>
+		<if test="file.section != null and file.section.sectionNo != null">
+			#{file.section.sectionNo,jdbcType=DECIMAL},
+    	</if>
+		#{file.topic.topicNo,jdbcType=DECIMAL},
+		SYSDATE,
+		#{username,jdbcType=VARCHAR},
+		#{file.id,jdbcType=DECIMAL},
+		#{file.downloadTimes,jdbcType=DECIMAL},
+		#{file.otherStoreView,jdbcType=DECIMAL}
+    )
+  </insert>
+  
+  <select id="selectRecentSummary" resultType="java.util.HashMap" parameterType="java.lang.Integer">
+  	select *
+  	from T_TOPIC T1,
+	(select T1.TOPIC_NO, COUNT(T2.ID) as FILE_NUMBER
+ 	from T_TOPIC T1
+ 	left join T_FILE T2
+ 	on T1.TOPIC_NO = T2.TOPIC_NO
+ 	and TO_CHAR(T2.CREATE_DATE, 'yyyy-mm-dd') >
+ 	TO_CHAR(ADD_MONTHS(SYSDATE, ${month}), 'yyyy-mm-dd')
+	GROUP BY T1.TOPIC_NO) T2
+	where T1.TOPIC_NO = T2.TOPIC_NO
+	and T1.PARENT_TOPIC_NO IS NOT NULL
+	and T1.STATUS = 1
+	order by T1.IMPORTANT_LEVEL
+  </select>
+  
+  <update id="updateDownloadTimes" parameterType="java.lang.Integer">
+  	update T_FILE set DOWNLOAD_TIMES = DOWNLOAD_TIMES + 1 where ID = #{id,jdbcType=DECIMAL}
+  </update>
+  
+  <select id="insertFileStore" statementType="CALLABLE" parameterType="java.util.Map">
+  	<![CDATA[
+  		{call PRO_INSERT_FILE_STORE(
+  			#{storeNo,mode=IN,jdbcType=VARCHAR},
+  			#{storeNoSuffix,mode=IN,jdbcType=VARCHAR},
+  			#{fileId,mode=IN,jdbcType=DECIMAL},
+  			#{count,mode=OUT,jdbcType=INTEGER}
+		)}
+	]]>
+  </select>
+  
+  <insert id="insertDelFileStore" parameterType="java.lang.Integer">
+  	insert into T_DEL_FILE_STORE
+  	(ID, FILE_ID, STORE_NO, OG_ID)
+  	select
+  	SEQ_T_DEL_FILE_STORE.NEXTVAL as ID, FILE_ID, STORE_NO, ID AS OG_ID
+  	from T_FILE_STORE
+  	where FILE_ID = #{fileId,jdbcType=DECIMAL}
+  </insert>
+  
+  <delete id="deleteFileStore" parameterType="java.lang.Integer">
+  	delete from T_FILE_STORE
+  	where FILE_ID = #{fileId,jdbcType=DECIMAL}
+  </delete>
+  
+</mapper>

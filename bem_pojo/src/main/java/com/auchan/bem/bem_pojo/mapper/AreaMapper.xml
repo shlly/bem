@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.auchan.bem.bem_dao.AreaDAO">
+  <resultMap id="BaseResultMap" type="com.auchan.bem.bem_pojo.entity.Area">
+    <id column="AREA_NO" jdbcType="VARCHAR" property="areaNo" />
+    <result column="AREA_NAME" jdbcType="VARCHAR" property="areaName" />
+    <result column="PARENT_NO" jdbcType="VARCHAR" property="parentNo" />
+    <result column="STATUS" jdbcType="VARCHAR" property="status" />
+    <result column="LEAVES" jdbcType="VARCHAR" property="leaves" />
+    <collection property="childArea" ofType="com.auchan.bem.bem_pojo.entity.Area"
+			javaType="java.util.ArrayList">
+ 		<id column="AAREA_NO" jdbcType="VARCHAR" property="areaNo" />
+	    <result column="AAREA_NAME" jdbcType="VARCHAR" property="areaName" />
+	    <result column="APARENT_NO" jdbcType="VARCHAR" property="parentNo" />
+	    <result column="ASTATUS" jdbcType="VARCHAR" property="status" />
+	    <result column="ALEAVES" jdbcType="VARCHAR" property="leaves" />
+	    <collection property="stores" ofType="com.auchan.bem.bem_pojo.entity.Store"
+			javaType="java.util.ArrayList">
+	 		<id column="SSTORE_NO" jdbcType="DECIMAL" property="storeNo" />
+		    <result column="SNAME" jdbcType="VARCHAR" property="name" />
+		    <result column="SSTATUS" jdbcType="DECIMAL" property="status" />
+		    <result column="SGUI_ADDRESS" jdbcType="VARCHAR" property="guiAddress" />
+		    <result column="SPOST_NO" jdbcType="DECIMAL" property="postNo" />
+		    <result column="SPHONE_NO" jdbcType="VARCHAR" property="phoneNo" />
+		    <result column="SFAX_NO" jdbcType="VARCHAR" property="faxNo" />
+		    <result column="SAREA_NO" jdbcType="VARCHAR" property="areaNo" />
+		    <result column="SAREA_NAME" jdbcType="VARCHAR" property="areaName" />
+	 	</collection>
+ 	</collection>
+  </resultMap>
+  <sql id="Base_Column_List">
+    T1.AREA_NO, T1.AREA_NAME, T1.PARENT_NO, T1.STATUS, T1.LEAVES,
+    T2.AAREA_NO, T2.AAREA_NAME, T2APARENT_NO, T2ASTATUS, T2.ALEAVES
+  </sql>
+    
+  <select id="selectChildStore" resultType="com.auchan.bem.bem_pojo.entity.Store">
+    select 
+    SSTORE_NO, SNAME, SSTATUS, SGUI_ADDRESS, SPOST_NO, SPHONE_NO, SFAX_NO, SAREA_NO, SAREA_NAME
+    from T_STORE
+    where STATUS=1
+    and AREA_NO = #{AREA_NO,jdbcType=VARCHAR}
+    order by STORE_NO, NAME
+  </select>
+  
+  <select id="selectChildArea" resultType="com.auchan.bem.bem_pojo.entity.Area">
+    select 
+    AREA_NO, AAREA_NAME, APARENT_NO, ASTATUS, ALEAVES
+    from T_AREA
+    where STATUS=0
+    and LEAVES = 1
+    and PARENT_NO = #{AREA_NO,jdbcType=VARCHAR}
+    order by AREA_NO, AREA_NAME
+  </select>
+  
+  <select id="selectAll" resultMap="BaseResultMap">
+    select 
+    T1.AREA_NO, T1.AREA_NAME, T1.PARENT_NO, T1.STATUS, T1.LEAVES,
+    T2.*
+    from T_AREA T1
+    left join
+    (select
+    T3.AREA_NO AS AAREA_NO, T3.AREA_NAME AS AAREA_NAME, T3.PARENT_NO AS APARENT_NO, T3.STATUS AS ASTATUS, T3.LEAVES AS ALEAVES,
+    T4.STORE_NO AS SSTORE_NO, T4.NAME AS SNAME, T4.STATUS AS SSTATUS, T4.GUI_ADDRESS AS SGUI_ADDRESS, T4.POST_NO AS SPOST_NO, T4.PHONE_NO AS SPHONE_NO, T4.FAX_NO AS SFAX_NO, T4.AREA_NO AS SAREA_NO, T4.AREA_NAME AS SAREA_NAME
+    from T_AREA T3 left join T_STORE T4 on (T3.AREA_NO = T4.AREA_NO)
+    where T4.STATUS=1
+    order by STORE_NO, NAME)
+    T2 on (T1.AREA_NO = T2.APARENT_NO)
+    where T1.STATUS=0
+    and T1.LEAVES = 0
+    and T1.PARENT_NO = '01'
+    and T2.ASTATUS=0
+    and T2.ALEAVES = 1
+    order by T1.AREA_NO, T2.AAREA_NO
+  </select>
+</mapper>
